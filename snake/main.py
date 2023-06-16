@@ -5,10 +5,10 @@ pygame.init()
 #caption
 pygame.display.set_caption("Snake")
 #textues:
-background = pygame.image.load("green_background.jpg")
-red_t = pygame.image.load('red.png')
-yellow_t = pygame.image.load('gold.png')
-white_t = pygame.image.load('white.png')
+background = pygame.image.load("textures/green_background.jpg")
+red_t = pygame.image.load('textures/red.png')
+yellow_t = pygame.image.load('textures/gold.png')
+white_t = pygame.image.load('textures/white.png')
 snake_textures = [red_t, yellow_t, white_t]
 
 #parameters:

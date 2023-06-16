@@ -8,9 +8,8 @@ pygame.display.set_caption("Snake")
 background = pygame.image.load("green_background.jpg")
 red_t = pygame.image.load('red.png')
 yellow_t = pygame.image.load('gold.png')
-black_t = pygame.image.load('black.png')
 white_t = pygame.image.load('white.png')
-snake_textures = [red_t, black_t,yellow_t, white_t]
+snake_textures = [red_t, yellow_t, white_t]
 
 #parameters:
 height = 800
@@ -65,10 +64,8 @@ def draw_snake():
     global snake_size, snake_rect, segments, score
     for segment in segments:
         if score < 50:
-            window.blit(snake_textures[3], segment)
-        if score >= 50 and score < 100:
             window.blit(snake_textures[2], segment)
-        if score >= 100 and score < 150:
+        if score >= 50 and score < 150:
             window.blit(snake_textures[1], segment)
         if score >= 150:
             window.blit(snake_textures[0], segment)
@@ -97,7 +94,6 @@ def Gameloop():
 
     food_rect = get_food_rect()
     food_rect1 = get_food_rect()
-    food_rect2 = get_food_rect()
     x = random.randrange(50, width, 50)
     y = random.randrange(50, height, 50)
     while run:
@@ -120,10 +116,8 @@ def Gameloop():
             draw_snake()
             draw_food(food_rect)
             draw_food(food_rect1)
-            draw_food(food_rect2)
             food_rect = eating(x, y, food_rect)
             food_rect1 = eating(x, y, food_rect1)
-            food_rect2 = eating(x, y, food_rect2)
             check_collision()
             draw_score(score)
         pygame.display.update()

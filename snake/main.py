@@ -15,60 +15,57 @@ snake_textures = [red_t, yellow_t, white_t]
 height = 800
 width = 800
 window = pygame.display.set_mode((width, height))
-green = (0, 255, 0)
 size = 50
 snake_size = 1
+snake_size_AI = 1
 snake_dir = (0, 0)
 snake_dir_AI = (0, 0)
 snake_rect = pygame.Rect(snake_dir[0], snake_dir[1], size, size)
 snake_rect_AI = pygame.Rect(snake_dir[0], snake_dir[1], size, size)
 segments = [snake_rect.copy()]
+segments_AI = [snake_rect_AI.copy()]
 snake_dir = (0, 0)
 snake_speed = 1
-delay = 150
+delay = 100
 score = 0
 
 run = True
 game_over = False
+
 
 def message(text):
     font = pygame.font.Font(None, 36)
     message = font.render(text, True, (255, 255, 255))
     text_rect = message.get_rect(center=(width/2, height/2))
     window.blit(message, text_rect)
+
+
 def draw_score(score):
     font = pygame.font.Font(None, 36)
     score_text = font.render("Score: " + str(score), True, (255, 255, 255))
     score_rect = (10, 10)
     window.blit(score_text, score_rect)
-def changing_direction(x_AI, y_AI):
-    global snake_dir_AI
-    if x_AI <= 50:
-        if y_AI <= 50:
-            snake_dir_AI = (size, 0)
-        elif y_AI >= height - 50:
-            snake_dir_AI = (size, 0)
-        else:
-            snake_dir_AI = (0, size)
-    elif x_AI >= width - 50:
-        if y_AI <= 50:
-            snake_dir_AI = (-size, 0)
-        elif y_AI >= height - 50:
-            snake_dir_AI = (-size, 0)
-        else:
-            snake_dir_AI = (0, size)
-    elif y_AI <= 50:
-        snake_dir_AI = (0, size)
-    elif y_AI >= height - 50:
-        snake_dir_AI = (0, -size)
-    return snake_dir_AI
-def AI_snake_move():
-        global snake_dir_AI, snake_rect_AI
-        x = snake_rect_AI.x
-        y = snake_rect_AI.y
-        directions = [(0, -size), (0, size), (size, 0), (-size, 0)]
 
-        changing_direction(x,y)
+
+def AI_snake_move():
+    global snake_dir_AI, snake_rect_AI
+    if snake_dir_AI == (0, 0):  # Jeśli wąż AI stoi w miejscu
+        snake_dir_AI = (size, 0)  # Ustawiamy początkowy kierunek ruchu
+
+    # Sprawdzamy, czy wąż AI dotarł do krawędzi planszy
+    if snake_rect_AI.x <= 0 or snake_rect_AI.x >= width - size or snake_rect_AI.y <= 0 or snake_rect_AI.y >= height - size:
+        if snake_dir_AI == (size, 0):
+            snake_dir_AI = (0, size)
+        elif snake_dir_AI == (0, size):
+            snake_dir_AI = (-size, 0)
+        elif snake_dir_AI == (-size, 0):
+            snake_dir_AI = (0, -size)
+        elif snake_dir_AI == (0, -size):
+            snake_dir_AI = (size, 0)
+    else:
+        snake_rect_AI.x += snake_dir_AI[0]
+        snake_rect_AI.y += snake_dir_AI[1]
+
 
 def snake_move():
     global snake_dir
@@ -82,8 +79,12 @@ def snake_move():
         snake_dir = (0, -size)
     if keys[pygame.K_DOWN] and snake_dir != (0, -size):
         snake_dir = (0, size)
+
+
 def draw_food(food_rect):
     pygame.draw.rect(window, (139,35,35),food_rect)
+
+
 def get_food_rect():
     foodx = random.randrange(0, width, 50)
     foody = random.randrange(0, height, 50)
@@ -99,12 +100,18 @@ def draw_snake():
             window.blit(snake_textures[1], segment)
         if score >= 150:
             window.blit(snake_textures[0], segment)
-def draw_snake_AI(snake_rect_AI):
-    pygame.draw.rect(window, (0,255,255), snake_rect_AI )
+
+def draw_snake_AI():
+    global segments_AI
+    for segment in segments_AI:
+        window.blit(snake_textures[1], segment)
+
+
 def delete_segments(segments):
     global snake_size
     if len(segments) > snake_size:
         del segments[0]
+
 
 def check_collision():
     global segments, game_over
@@ -113,21 +120,24 @@ def check_collision():
         if segment.colliderect(head):
             game_over = True
 
+
 def eating(x, y, food_rect):
-    global snake_size, score
+    global score, snake_size
     if x == food_rect[0] and y == food_rect[1]:
         snake_size += 1
         score += 10
         return get_food_rect()
     return food_rect
+
+
 def get_starting_position():
     x = random.randrange(50, width, 50)
     y = random.randrange(50, height, 50)
-    return x,y
+    return x, y
 
 
 def Gameloop():
-    global run, game_over, snake_size, snake_rect, segments, snake_speed, score, snake_rect_AI
+    global run, game_over, snake_size, snake_rect, segments, snake_speed, score, snake_rect_AI, segments_AI, snake_size_AI
 
     food_rect = get_food_rect()
     food_rect1 = get_food_rect()
@@ -150,7 +160,9 @@ def Gameloop():
             snake_rect = pygame.Rect(x, y, size, size)
             snake_rect_AI = pygame.Rect(x_AI, y_AI, size, size)
             segments.append(snake_rect)
+            segments_AI.append(snake_rect_AI)
             delete_segments(segments)
+            delete_segments(segments_AI)
             if x > width or x < 0 or y > height or y < 0:
                 game_over = True
             if x_AI > width or x_AI < 0 or y_AI > height or y_AI < 0:
@@ -158,11 +170,13 @@ def Gameloop():
 
             window.blit(pygame.transform.scale(background, (height, width)), (0, 0))
             draw_snake()
-            draw_snake_AI(snake_rect_AI)
+            draw_snake_AI()
             draw_food(food_rect)
             draw_food(food_rect1)
             food_rect = eating(x, y, food_rect)
+            food_rect = eating(x_AI, y_AI, food_rect)
             food_rect1 = eating(x, y, food_rect1)
+            food_rect1 = eating(x_AI, y_AI, food_rect1)
             check_collision()
             draw_score(score)
         pygame.display.update()
